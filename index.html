@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หารกัน - คอร์ทแบด</title>
+    <link rel="stylesheet" href="style.css">
+
+    <link rel="icon" href="candy.png" type="image/png">
+</head>
+<body>
+    <div class="container">
+        <h1>🤑 หารกัน (คอร์ทแบด)</h1>
+        
+        <div class="card">
+            <h3>🏸 ข้อมูลสนามและลูกแบด</h3>
+            <div class="input-group">
+                <label>ค่าคอร์ท (บาท/ชม.)</label>
+                <input type="number" id="courtPrice" value="180">
+            </div>
+            <div class="input-group">
+                <label>เวลาที่จองคอร์ท (ชม.)</label>
+                <input type="number" id="courtHours" value="" step="0.5">
+            </div>
+            <div class="input-group">
+                <label>ราคาลูกแบด (บาท/ลูก)</label>
+                <input type="number" id="shuttlePrice" value="">
+            </div>
+            <div class="input-group">
+                <label>จำนวนลูกที่ใช้ (ลูก)</label>
+                <input type="number" id="shuttleCount" value="">
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>💳 ข้อมูลการโอนเงิน (คนรับเงิน)</h3>
+            <div class="input-group">
+                <label>ธนาคาร / พร้อมเพย์</label>
+                <input type="text" id="bankName" placeholder="เช่น กสิกรไทย หรือ PromptPay">
+            </div>
+            <div class="input-group">
+                <label>เลขบัญชี / เบอร์โทร</label>
+                <input type="text" id="bankAccount" placeholder="012-3-45678-9">
+            </div>
+            <div class="input-group">
+                <label>ชื่อคนรับเงิน (บัญชี)</label>
+                <select id="receiverSelect">
+                    <option value="external">-- คนนอก (ไม่ได้เล่นด้วย) --</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>👥 รายชื่อคนเล่น</h3>
+            <div id="playersList"></div>
+            <button class="btn-add" onclick="addPlayer()">+ เพิ่มคนเล่น</button>
+        </div>
+
+        <button class="btn-calc" onclick="calculate()">🧮 คำนวณยอด</button>
+
+        <div id="resultSection" class="hidden">
+            <h3>📊 สรุปยอดแบบละเอียด</h3>
+            <div class="table-responsive">
+                <table id="resultTable">
+                    <thead>
+                        <tr>
+                            <th>ชื่อ</th>
+                            <th>เวลา (ชม.)</th>
+                            <th>ยอดจ่าย</th>
+                            <th>หักค่าลูก</th>
+                            <th>ยอดโอน</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <h3>📝 ข้อความสรุป (สำหรับก๊อปปี้)</h3>
+            <textarea id="summaryText" rows="8" readonly></textarea>
+            <button class="btn-copy" onclick="copyText()">📋 ก๊อปปี้ข้อความ</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
