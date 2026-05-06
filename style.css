@@ -181,3 +181,22 @@ textarea {
     .player-row { flex-direction: column; align-items: stretch; }
     .player-row .btn-remove { width: 100%; }
 }
+/* เพิ่มเติมจากของเดิมเล็กน้อย */
+.input-row {
+    display: flex;
+    gap: 10px;
+}
+.input-row .input-group {
+    flex: 1;
+}
+hr {
+    border: 0;
+    border-top: 1px solid var(--light-gray);
+    margin: 15px 0;
+}
+@media (max-width: 480px) {
+    .input-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}
