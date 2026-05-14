@@ -1,18 +1,15 @@
 let playerCount = 0;
-let flexPayload = null; // สำหรับเก็บข้อมูล Flex Message
+let flexPayload = null; 
 
-// ใส่ LIFF ID ของ Hankan Badminton ที่คุณสร้าง
+// ใส่ LIFF ID ของ Hankan Badminton 
 const LIFF_ID = "2010086723-ESV925IL"; 
 
 window.onload = async () => {
-    // เริ่มต้นระบบ LIFF
     try {
         await liff.init({ liffId: LIFF_ID });
     } catch (err) {
         console.error("LIFF Initialization failed", err);
     }
-
-    // เริ่มต้นใส่ชื่อตัวอย่าง (สามารถลบออกได้ถ้าต้องการให้หน้าเว็บว่างตอนเริ่ม)
     updateReceiverList();
 };
 
@@ -41,6 +38,7 @@ function removePlayer(id) {
 
 function updateReceiverList() {
     const select = document.getElementById('receiverSelect');
+    if(!select) return;
     const currentVal = select.value;
     select.innerHTML = '<option value="external">-- คนนอก --</option>';
     document.querySelectorAll('.p-name').forEach((input, index) => {
@@ -56,7 +54,6 @@ function updateReceiverList() {
 }
 
 function calculate() {
-    // 1. ดึงข้อมูลพื้นฐาน
     const courtPrice = parseFloat(document.getElementById('courtPrice').value) || 0;
     const courtHours = parseFloat(document.getElementById('courtHours').value) || 0;
     const shuttleTubePrice = parseFloat(document.getElementById('shuttleTubePrice').value) || 0;
@@ -68,7 +65,6 @@ function calculate() {
     const totalShuttleCost = shuttleUnitPrice * shuttleCountUsed;
     const totalTripCost = totalCourtCost + totalShuttleCost;
 
-    // 2. ข้อมูลคนเล่น
     const rows = document.querySelectorAll('.player-row');
     let players = [];
     let totalHours = 0;
@@ -88,7 +84,6 @@ function calculate() {
     const ratePerHour = totalTripCost / totalHours;
     const receiverId = document.getElementById('receiverSelect').value;
 
-    // 3. คำนวณรายคน
     const tbody = document.querySelector('#resultTable tbody');
     tbody.innerHTML = '';
     let payList = [];
@@ -123,7 +118,6 @@ function calculate() {
         </tr>`;
     });
 
-    // 4. สรุปข้อมูลธนาคาร/รับเงิน
     let mainReceiverName = "คนรับเงิน";
     if (receiverId !== "external") {
         const r = players.find(p => p.id === receiverId);
@@ -140,20 +134,17 @@ function calculate() {
     payList.forEach(item => summary += `- ${item.name}: ${item.amount.toFixed(2)} บ.\n`);
     
     if (refundList.length > 0) {
-        summary += `----------------------\n🔄 คนรอรับเงินคืนจาก ${mainReceiverName}:\n`;
-        refundList.forEach(item => summary += `- ${item.name}: ได้รับคืน ${item.amount.toFixed(2)} บ.\n`);
+        summary += `----------------------\n🔄 คืนเงินทอนจาก ${mainReceiverName}:\n`;
+        refundList.forEach(item => summary += `- ${item.name}: คืน ${item.amount.toFixed(2)} บ.\n`);
     }
 
-    summary += `----------------------\n🏦 โอนที่: ${mainReceiverName}\n`;
-    summary += `บัญชี/พร้อมเพย์: ${bankAcc}\n`;
+    summary += `----------------------\n🏦 โอนที่: ${mainReceiverName}\nบัญชี: ${bankAcc}`;
 
     document.getElementById('summaryText').value = summary;
     document.getElementById('resultSection').classList.remove('hidden');
 
-    // 5. สร้าง Flex Message Payload
     buildFlexMessage(totalTripCost, payList, refundList, mainReceiverName, accType, bankName, bankAcc);
     
-    // แสดงปุ่มส่งเข้า LINE
     const btnLine = document.getElementById('btnSendLine');
     if(btnLine) btnLine.style.display = 'block';
 }
@@ -209,12 +200,11 @@ function buildFlexMessage(totalCost, payList, refundList, receiverName, accType,
         body: { type: "box", layout: "vertical", spacing: "sm", contents: contents }
     };
 
-    // เพิ่ม QR Code ถ้าเป็นพร้อมเพย์
     if (accType === 'promptpay' && bankAcc.length >= 10) {
         let cleanNumber = bankAcc.replace(/[^0-9]/g, '');
         bubble.hero = {
             type: "image",
-            url: `https://promptpay.io/${cleanNumber}.png`,
+            url: `https://promptpay.io/${cleanNumber}/${totalCost.toFixed(2)}.png`,
             size: "full",
             aspectRatio: "1:1",
             aspectMode: "cover"
@@ -231,14 +221,11 @@ function buildFlexMessage(totalCost, payList, refundList, receiverName, accType,
 async function sendToLine() {
     if (!flexPayload) return;
     try {
-        // เปลี่ยนมาใช้ shareTargetPicker แทน
-        await liff.shareTargetPicker([
-            { "type": "flex", "altText": "🏸 บิลค่าคอร์ทแบดมินตัน", "contents": flexPayload }
-        ]);
-        // พอกดส่งเสร็จให้ปิดหน้าต่าง LIFF อัตโนมัติ
+        await liff.sendMessages([flexPayload]);
+        alert("✅ ส่งบิลเข้าแชทเรียบร้อย!");
         liff.closeWindow(); 
     } catch (err) {
-        alert("ส่งไม่สำเร็จ: " + err.message);
+        alert("❌ ส่งไม่สำเร็จ! กรุณาเช็คว่าติ๊กเปิด 'chat_message.write' ใน LINE Developers หรือยัง\n\nError: " + err.message);
     }
 }
 
