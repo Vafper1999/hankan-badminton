@@ -1,11 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap');
 
 :root {
-    --primary-dark: #021859;
-    --accent-yellow: #F2E205;
-    --light-yellow: #F2EA79;
-    --light-gray: #D9D9D9;
-    --text-dark: #262626;
+    --primary: #5ea0d0; /* ฟ้าพาสเทล */
+    --accent: #FFB7B2; /* ชมพูพีชพาสเทล */
+    --bg-color: #FFFDF9; /* ครีมละมุน */
+    --card-bg: #FFFFFF;
+    --text-dark: #555555; /* เทาเข้มอ่านง่ายสบายตา */
+    --border-light: #EAEAEA;
+    --btn-add-bg: #E2F0CB; /* เขียวอ่อนพาสเทล */
+    --btn-remove-bg: #FFDAC1; /* ส้มอ่อนพาสเทล */
 }
 
 * {
@@ -14,7 +17,7 @@
 }
 
 body {
-    background-color: var(--light-gray);
+    background-color: var(--bg-color);
     color: var(--text-dark);
     margin: 0;
     padding: 15px;
@@ -23,35 +26,36 @@ body {
 .container {
     max-width: 600px;
     margin: 0 auto;
-    background: #fff;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.05);
 }
 
 h1 {
     text-align: center;
-    color: var(--primary-dark);
+    color: var(--primary);
     margin-top: 0;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
 }
 
 h3 {
-    color: var(--primary-dark);
-    border-bottom: 2px solid var(--accent-yellow);
-    padding-bottom: 5px;
+    color: var(--primary);
+    border-bottom: 2px dashed var(--accent);
+    padding-bottom: 8px;
     margin-top: 0;
 }
 
 .card {
-    background-color: #f9f9f9;
-    padding: 15px;
-    border-radius: 8px;
+    background-color: #FAFAFA;
+    padding: 18px;
+    border-radius: 16px;
     margin-bottom: 20px;
-    border: 1px solid var(--light-gray);
+    border: 1px solid var(--border-light);
 }
 
 .input-group {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     display: flex;
     flex-direction: column;
 }
@@ -59,19 +63,23 @@ h3 {
 label {
     font-size: 14px;
     font-weight: 500;
-    margin-bottom: 5px;
+    margin-bottom: 6px;
+    color: var(--text-dark);
 }
 
 input[type="text"], input[type="number"], select, textarea {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    padding: 12px;
+    border: 1px solid #DDDDDD;
+    border-radius: 12px;
     font-size: 16px;
     outline: none;
+    transition: all 0.3s ease;
+    background-color: var(--card-bg);
 }
 
-input:focus, select:focus {
-    border-color: var(--primary-dark);
+input:focus, select:focus, textarea:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(138, 182, 214, 0.2);
 }
 
 /* ส่วนของ Player Row */
@@ -80,11 +88,17 @@ input:focus, select:focus {
     flex-wrap: wrap;
     gap: 10px;
     align-items: center;
-    background: #fff;
-    padding: 10px;
-    border: 1px solid var(--light-gray);
-    border-radius: 8px;
-    margin-bottom: 10px;
+    background: var(--card-bg);
+    padding: 12px;
+    border: 1px solid var(--border-light);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    transition: transform 0.2s;
+}
+
+.player-row:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 
 .player-row input[type="text"] { flex: 2; min-width: 100px; }
@@ -93,59 +107,76 @@ input:focus, select:focus {
     flex: 2;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px;
     font-size: 14px;
+    cursor: pointer;
 }
 
 .btn-remove {
-    background: #ff4d4d;
-    color: white;
+    background: var(--btn-remove-bg);
+    color: #E07A5F;
     border: none;
-    border-radius: 5px;
-    padding: 10px;
+    border-radius: 10px;
+    padding: 12px;
     cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-remove:hover {
+    background: #FFB7B2;
+    color: white;
 }
 
 button {
     cursor: pointer;
     font-weight: 500;
-    transition: 0.2s;
+    transition: 0.3s;
 }
 
 .btn-add {
-    background: var(--light-gray);
-    color: var(--text-dark);
-    border: none;
-    padding: 10px;
-    width: 100%;
-    border-radius: 5px;
-    margin-top: 5px;
-}
-
-.btn-add:hover { background: #ccc; }
-
-.btn-calc {
-    background: var(--primary-dark);
-    color: var(--accent-yellow);
-    border: none;
-    padding: 15px;
-    width: 100%;
-    font-size: 18px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-}
-
-.btn-calc:hover { background: #010e36; }
-
-.btn-copy {
-    background: var(--accent-yellow);
-    color: var(--primary-dark);
+    background: var(--btn-add-bg);
+    color: #6B9080;
     border: none;
     padding: 12px;
     width: 100%;
+    border-radius: 12px;
+    margin-top: 5px;
     font-size: 16px;
-    border-radius: 8px;
-    margin-top: 10px;
+}
+
+.btn-add:hover { background: #CCE3DE; }
+
+.btn-calc {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 16px;
+    width: 100%;
+    font-size: 18px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(138, 182, 214, 0.4);
+}
+
+.btn-calc:hover { 
+    background: #73A2C6; 
+    transform: translateY(-2px);
+}
+
+.btn-copy {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 14px;
+    width: 100%;
+    font-size: 16px;
+    border-radius: 12px;
+    margin-top: 12px;
+    box-shadow: 0 4px 10px rgba(255, 183, 178, 0.3);
+}
+
+.btn-copy:hover { 
+    background: #FF9A9E; 
 }
 
 .hidden { display: none; }
@@ -154,49 +185,56 @@ button {
 .table-responsive { overflow-x: auto; }
 table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0;
     margin-bottom: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border-light);
 }
 
 th, td {
-    padding: 10px;
+    padding: 12px;
     text-align: center;
-    border-bottom: 1px solid var(--light-gray);
+    border-bottom: 1px solid var(--border-light);
 }
 
 th {
-    background-color: var(--primary-dark);
+    background-color: var(--primary);
     color: white;
+    font-weight: 400;
 }
 
-tr:nth-child(even) { background-color: #f9f9f9; }
+tr:last-child td { border-bottom: none; }
+tr:nth-child(even) { background-color: #FAFAFA; }
 
 textarea {
     width: 100%;
     resize: none;
-    background: #f4f4f4;
+    background: #FAFAFA;
+    border-radius: 12px;
+    padding: 15px;
+    color: var(--text-dark);
 }
 
-@media (max-width: 400px) {
-    .player-row { flex-direction: column; align-items: stretch; }
-    .player-row .btn-remove { width: 100%; }
-}
-/* เพิ่มเติมจากของเดิมเล็กน้อย */
 .input-row {
     display: flex;
-    gap: 10px;
+    gap: 15px;
 }
+
 .input-row .input-group {
     flex: 1;
 }
+
 hr {
     border: 0;
-    border-top: 1px solid var(--light-gray);
-    margin: 15px 0;
+    border-top: 2px dashed var(--border-light);
+    margin: 20px 0;
 }
+
 @media (max-width: 480px) {
-    .input-row {
-        flex-direction: column;
-        gap: 0;
-    }
+    .container { padding: 15px; }
+    .input-row { flex-direction: column; gap: 0; }
+    .player-row { flex-direction: column; align-items: stretch; }
+    .player-row .btn-remove { width: 100%; }
 }
