@@ -89,7 +89,7 @@ function calculate() {
     
     let payList = [];
     let refundList = []; 
-    let playerDetails = []; // เก็บข้อมูลทุกคนเพื่อส่งไปทำตารางใน Flex
+    let playerDetails = []; 
 
     players.forEach(p => {
         const personalDue = p.hours * ratePerHour;
@@ -100,7 +100,6 @@ function calculate() {
 
         const balance = personalPrepaid - personalDue;
 
-        // บันทึกเข้า playerDetails
         playerDetails.push({
             name: p.name,
             hours: p.hours,
@@ -154,7 +153,6 @@ function calculate() {
     document.getElementById('summaryText').value = summary;
     document.getElementById('resultSection').classList.remove('hidden');
 
-    // ส่งข้อมูลแบบตารางเข้าไปสร้าง Flex
     buildFlexMessage(totalTripCost, playerDetails, mainReceiverName, accType, bankName, bankAcc);
     
     const btnLine = document.getElementById('btnSendLine');
@@ -167,7 +165,6 @@ function buildFlexMessage(totalCost, playerDetails, receiverName, accType, bankN
         { type: "separator", margin: "md" }
     ];
     
-    // หัวตาราง
     contents.push({
         type: "box", layout: "horizontal", margin: "md",
         contents: [
@@ -179,17 +176,16 @@ function buildFlexMessage(totalCost, playerDetails, receiverName, accType, bankN
         ]
     });
 
-    // ข้อมูลแต่ละคน
     playerDetails.forEach(p => {
-        let balanceText = "0";
+        let balanceText = "0.00";
         let balanceColor = "#aaaaaa";
         
         if (p.balance > 0) {
-            balanceText = `คืน ${p.balance.toFixed(0)}`;
-            balanceColor = "#00B900"; // สีเขียวรับคืน
+            balanceText = `คืน ${p.balance.toFixed(2)}`;
+            balanceColor = "#00B900"; 
         } else if (p.balance < 0) {
-            balanceText = `โอน ${Math.abs(p.balance).toFixed(0)}`;
-            balanceColor = "#E07A5F"; // สีแดงโอนเพิ่ม
+            balanceText = `โอน ${Math.abs(p.balance).toFixed(2)}`;
+            balanceColor = "#E07A5F"; 
         }
 
         contents.push({
@@ -197,8 +193,8 @@ function buildFlexMessage(totalCost, playerDetails, receiverName, accType, bankN
             contents: [
                 { type: "text", text: p.name, size: "xs", color: "#111111", flex: 3, weight: "bold", wrap: true },
                 { type: "text", text: p.hours.toString(), size: "xs", color: "#555555", flex: 1, align: "center" },
-                { type: "text", text: p.due.toFixed(0), size: "xs", color: "#555555", flex: 2, align: "end" },
-                { type: "text", text: p.prepaid.toFixed(0), size: "xs", color: "#555555", flex: 2, align: "end" },
+                { type: "text", text: p.due.toFixed(2), size: "xs", color: "#555555", flex: 2, align: "end" },
+                { type: "text", text: p.prepaid.toFixed(2), size: "xs", color: "#555555", flex: 2, align: "end" },
                 { type: "text", text: balanceText, size: "xs", color: balanceColor, flex: 3, align: "end", weight: "bold" }
             ]
         });
@@ -231,7 +227,7 @@ function buildFlexMessage(totalCost, playerDetails, receiverName, accType, bankN
         altText: "🏸 แจ้งยอดค่าแบดมินตัน",
         contents: {
             type: "bubble",
-            size: "mega", // ปรับขนาดเล็กลงจาก giga เป็น mega
+            size: "mega", 
             header: {
                 type: "box", layout: "vertical", backgroundColor: "#E2F0CB",
                 contents: [{ type: "text", text: "🏸 บิลค่าแบดมินตัน", weight: "bold", size: "md", color: "#555555", align: "center" }]
