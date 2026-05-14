@@ -188,33 +188,33 @@ function buildFlexMessage(totalCost, payList, refundList, receiverName, accType,
         contents.push({ type: "text", text: `เลขบัญชี: ${bankAcc}`, size: "sm", color: "#555555", weight: "bold" });
     } else {
         contents.push({ type: "text", text: `พร้อมเพย์: ${bankAcc}`, size: "sm", color: "#555555", weight: "bold" });
-    }
-
-    let bubble = {
-        type: "bubble",
-        size: "giga",
-        header: {
-            type: "box", layout: "vertical", backgroundColor: "#E2F0CB",
-            contents: [{ type: "text", text: "🏸 บิลค่าแบดมินตัน", weight: "bold", size: "lg", color: "#555555", align: "center" }]
-        },
-        body: { type: "box", layout: "vertical", spacing: "sm", contents: contents }
-    };
-
-    if (accType === 'promptpay' && bankAcc.length >= 10) {
-        let cleanNumber = bankAcc.replace(/[^0-9]/g, '');
-        bubble.hero = {
-            type: "image",
-            url: `https://promptpay.io/${cleanNumber}/${totalCost.toFixed(2)}.png`,
-            size: "full",
-            aspectRatio: "1:1",
-            aspectMode: "cover"
-        };
+        
+        // เพิ่ม QR Code (แบบไม่ระบุยอดเงิน และปรับขนาดเล็กลง)
+        if (bankAcc.length >= 10) {
+            let cleanNumber = bankAcc.replace(/[^0-9]/g, '');
+            contents.push({ type: "separator", margin: "md" });
+            contents.push({
+                type: "image",
+                url: `https://promptpay.io/${cleanNumber}.png`, 
+                size: "xl", 
+                margin: "md"
+            });
+            contents.push({ type: "text", text: "สแกน QR เพื่อโอนเงิน", size: "xs", color: "#aaaaaa", align: "center", margin: "sm" });
+        }
     }
 
     flexPayload = {
         type: "flex",
         altText: "🏸 แจ้งยอดค่าแบดมินตัน",
-        contents: bubble
+        contents: {
+            type: "bubble",
+            size: "giga",
+            header: {
+                type: "box", layout: "vertical", backgroundColor: "#E2F0CB",
+                contents: [{ type: "text", text: "🏸 บิลค่าแบดมินตัน", weight: "bold", size: "lg", color: "#555555", align: "center" }]
+            },
+            body: { type: "box", layout: "vertical", spacing: "sm", contents: contents }
+        }
     };
 }
 
