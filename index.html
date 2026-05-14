@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🤑 หารกัน - คอร์ทแบด</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="candy.png?v=2" type="image/png">
+    <link rel="icon" href="candy.png?v=1" type="image/png">
+    
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
     <div class="container">
@@ -47,22 +49,33 @@
         <div class="card">
             <h3>💳 ข้อมูลการโอนเงิน</h3>
             <div class="input-group">
-                <label>ธนาคาร / พร้อมเพย์</label>
-                <input type="text" id="bankName" placeholder="เช่น กสิกรไทย">
-            </div>
-            <div class="input-group">
-                <label>เลขบัญชี / เบอร์โทร</label>
-                <input type="text" id="bankAccount" placeholder="012-3-45678-9">
-            </div>
-            <div class="input-group">
                 <label>ชื่อคนรับเงินหลัก (คนจ่ายค่าคอร์ท)</label>
                 <select id="receiverSelect">
                     <option value="external">-- คนนอก (ไม่ได้เล่นด้วย) --</option>
                 </select>
             </div>
+            <div class="input-row">
+                <div class="input-group">
+                    <label>ประเภทบัญชีรับเงิน</label>
+                    <select id="accType">
+                        <option value="promptpay">พร้อมเพย์ (สร้าง QR ได้)</option>
+                        <option value="bank">บัญชีธนาคาร</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>ธนาคาร (ถ้ามี)</label>
+                    <input type="text" id="bankName" placeholder="เช่น กสิกรไทย">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>เลขบัญชี / เบอร์พร้อมเพย์</label>
+                <input type="text" id="bankAccount" placeholder="0812345678">
+            </div>
         </div>
 
         <button class="btn-calc" onclick="calculate()">🧮 คำนวณยอด</button>
+
+        <button id="btnSendLine" class="btn-line" onclick="sendToLine()">🚀 ส่งสรุปยอดเข้ากลุ่ม LINE</button>
 
         <div id="resultSection" class="hidden">
             <h3>📊 สรุปยอดแบบละเอียด</h3>
@@ -83,7 +96,7 @@
 
             <h3>📝 ข้อความสรุปสำหรับส่งในแชท</h3>
             <textarea id="summaryText" rows="10" readonly></textarea>
-            <button class="btn-copy" onclick="copyText()">📋 ก๊อปปี้ข้อความ</button>
+            <button class="btn-copy" onclick="copyText()">📋 ก๊อปปี้ข้อความ (กรณีไม่ได้เปิดใน LINE)</button>
         </div>
     </div>
     <script src="script.js"></script>

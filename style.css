@@ -238,3 +238,22 @@ hr {
     .player-row { flex-direction: column; align-items: stretch; }
     .player-row .btn-remove { width: 100%; }
 }
+
+.btn-line {
+    background: #00B900;
+    color: white;
+    border: none;
+    padding: 16px;
+    width: 100%;
+    font-size: 18px;
+    border-radius: 16px;
+    margin-top: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0, 185, 0, 0.3);
+    display: none; /* ซ่อนไว้ก่อนจนกว่าจะคำนวณเสร็จ */
+}
+
+.btn-line:hover { 
+    background: #009900; 
+    transform: translateY(-2px);
+}
