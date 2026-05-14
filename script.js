@@ -86,8 +86,10 @@ function calculate() {
 
     const tbody = document.querySelector('#resultTable tbody');
     tbody.innerHTML = '';
+    
     let payList = [];
     let refundList = []; 
+    let playerDetails = []; // เก็บข้อมูลทุกคนเพื่อส่งไปทำตารางใน Flex
 
     players.forEach(p => {
         const personalDue = p.hours * ratePerHour;
@@ -97,6 +99,15 @@ function calculate() {
         if (p.id === receiverId) personalPrepaid += totalCourtCost;
 
         const balance = personalPrepaid - personalDue;
+
+        // บันทึกเข้า playerDetails
+        playerDetails.push({
+            name: p.name,
+            hours: p.hours,
+            due: personalDue,
+            prepaid: personalPrepaid,
+            balance: balance
+        });
 
         let statusText = "";
         if (balance > 0) {
@@ -143,42 +154,55 @@ function calculate() {
     document.getElementById('summaryText').value = summary;
     document.getElementById('resultSection').classList.remove('hidden');
 
-    buildFlexMessage(totalTripCost, payList, refundList, mainReceiverName, accType, bankName, bankAcc);
+    // ส่งข้อมูลแบบตารางเข้าไปสร้าง Flex
+    buildFlexMessage(totalTripCost, playerDetails, mainReceiverName, accType, bankName, bankAcc);
     
     const btnLine = document.getElementById('btnSendLine');
     if(btnLine) btnLine.style.display = 'block';
 }
 
-function buildFlexMessage(totalCost, payList, refundList, receiverName, accType, bankName, bankAcc) {
+function buildFlexMessage(totalCost, playerDetails, receiverName, accType, bankName, bankAcc) {
     let contents = [
-        { type: "text", text: `ยอดรวมทริปนี้: ${totalCost.toFixed(2)} บาท`, weight: "bold", size: "sm", color: "#6B9080" },
+        { type: "text", text: `ยอดรวมทริปนี้: ${totalCost.toFixed(2)} บาท`, weight: "bold", size: "sm", color: "#6B9080", align: "center" },
         { type: "separator", margin: "md" }
     ];
     
-    contents.push({ type: "text", text: "💸 ยอดที่ต้องโอน:", weight: "bold", size: "sm", margin: "md", color: "#E07A5F" });
-    payList.forEach(p => {
+    // หัวตาราง
+    contents.push({
+        type: "box", layout: "horizontal", margin: "md",
+        contents: [
+            { type: "text", text: "ชื่อ", size: "xs", color: "#888888", flex: 3 },
+            { type: "text", text: "ชม.", size: "xs", color: "#888888", flex: 1, align: "center" },
+            { type: "text", text: "ค่าเล่น", size: "xs", color: "#888888", flex: 2, align: "end" },
+            { type: "text", text: "สำรอง", size: "xs", color: "#888888", flex: 2, align: "end" },
+            { type: "text", text: "โอน/รับ", size: "xs", color: "#888888", flex: 3, align: "end" }
+        ]
+    });
+
+    // ข้อมูลแต่ละคน
+    playerDetails.forEach(p => {
+        let balanceText = "0";
+        let balanceColor = "#aaaaaa";
+        
+        if (p.balance > 0) {
+            balanceText = `คืน ${p.balance.toFixed(0)}`;
+            balanceColor = "#00B900"; // สีเขียวรับคืน
+        } else if (p.balance < 0) {
+            balanceText = `โอน ${Math.abs(p.balance).toFixed(0)}`;
+            balanceColor = "#E07A5F"; // สีแดงโอนเพิ่ม
+        }
+
         contents.push({
-            type: "box", layout: "horizontal",
+            type: "box", layout: "horizontal", margin: "sm",
             contents: [
-                { type: "text", text: p.name, size: "sm", color: "#555555", flex: 2 },
-                { type: "text", text: `${p.amount.toFixed(2)} บ.`, size: "sm", color: "#555555", align: "end", flex: 1, weight: "bold" }
+                { type: "text", text: p.name, size: "xs", color: "#111111", flex: 3, weight: "bold", wrap: true },
+                { type: "text", text: p.hours.toString(), size: "xs", color: "#555555", flex: 1, align: "center" },
+                { type: "text", text: p.due.toFixed(0), size: "xs", color: "#555555", flex: 2, align: "end" },
+                { type: "text", text: p.prepaid.toFixed(0), size: "xs", color: "#555555", flex: 2, align: "end" },
+                { type: "text", text: balanceText, size: "xs", color: balanceColor, flex: 3, align: "end", weight: "bold" }
             ]
         });
     });
-
-    if (refundList.length > 0) {
-        contents.push({ type: "separator", margin: "md" });
-        contents.push({ type: "text", text: `🔄 คืนเงินทอนจาก ${receiverName}:`, weight: "bold", size: "sm", margin: "md", color: "#8AB6D6" });
-        refundList.forEach(p => {
-            contents.push({
-                type: "box", layout: "horizontal",
-                contents: [
-                    { type: "text", text: p.name, size: "sm", color: "#555555", flex: 2 },
-                    { type: "text", text: `${p.amount.toFixed(2)} บ.`, size: "sm", color: "#555555", align: "end", flex: 1, weight: "bold" }
-                ]
-            });
-        });
-    }
 
     contents.push({ type: "separator", margin: "md" });
     contents.push({ type: "text", text: `🏦 โอนไปที่: ${receiverName}`, weight: "bold", size: "sm", margin: "md" });
@@ -189,7 +213,6 @@ function buildFlexMessage(totalCost, payList, refundList, receiverName, accType,
     } else {
         contents.push({ type: "text", text: `พร้อมเพย์: ${bankAcc}`, size: "sm", color: "#555555", weight: "bold" });
         
-        // เพิ่ม QR Code (แบบไม่ระบุยอดเงิน และปรับขนาดเล็กลง)
         if (bankAcc.length >= 10) {
             let cleanNumber = bankAcc.replace(/[^0-9]/g, '');
             contents.push({ type: "separator", margin: "md" });
@@ -199,7 +222,7 @@ function buildFlexMessage(totalCost, payList, refundList, receiverName, accType,
                 size: "xl", 
                 margin: "md"
             });
-            contents.push({ type: "text", text: "สแกน QR เพื่อโอนเงิน", size: "xs", color: "#aaaaaa", align: "center", margin: "sm" });
+            contents.push({ type: "text", text: "สแกน QR ระบุยอดเอง", size: "xs", color: "#aaaaaa", align: "center", margin: "sm" });
         }
     }
 
@@ -208,10 +231,10 @@ function buildFlexMessage(totalCost, payList, refundList, receiverName, accType,
         altText: "🏸 แจ้งยอดค่าแบดมินตัน",
         contents: {
             type: "bubble",
-            size: "giga",
+            size: "mega", // ปรับขนาดเล็กลงจาก giga เป็น mega
             header: {
                 type: "box", layout: "vertical", backgroundColor: "#E2F0CB",
-                contents: [{ type: "text", text: "🏸 บิลค่าแบดมินตัน", weight: "bold", size: "lg", color: "#555555", align: "center" }]
+                contents: [{ type: "text", text: "🏸 บิลค่าแบดมินตัน", weight: "bold", size: "md", color: "#555555", align: "center" }]
             },
             body: { type: "box", layout: "vertical", spacing: "sm", contents: contents }
         }
