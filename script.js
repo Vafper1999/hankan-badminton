@@ -229,15 +229,16 @@ function buildFlexMessage(totalCost, payList, refundList, receiverName, accType,
 }
 
 async function sendToLine() {
-    if (!liff.isInClient()) {
-        alert("กรุณาเปิดผ่านแอป LINE เพื่อส่งข้อความเข้ากลุ่มครับ");
-        return;
-    }
+    if (!flexPayload) return;
     try {
-        await liff.sendMessages([flexPayload]);
+        // เปลี่ยนมาใช้ shareTargetPicker แทน
+        await liff.shareTargetPicker([
+            { "type": "flex", "altText": "🏸 บิลค่าคอร์ทแบดมินตัน", "contents": flexPayload }
+        ]);
+        // พอกดส่งเสร็จให้ปิดหน้าต่าง LIFF อัตโนมัติ
         liff.closeWindow(); 
     } catch (err) {
-        alert("เกิดข้อผิดพลาด: " + err);
+        alert("ส่งไม่สำเร็จ: " + err.message);
     }
 }
 
