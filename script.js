@@ -20,9 +20,9 @@ function addPlayer(name = '', hours = 2) {
     div.className = 'player-row';
     div.id = id;
     div.innerHTML = `
-        <input type="text" class="p-name" placeholder="ชื่อ" value="${name}" oninput="updateReceiverList()">
-        <input type="number" class="p-hours" placeholder="ชม." value="${hours}" step="0.5">
-        <label class="checkbox-group">
+        <input type="text" class="p-name" placeholder="ชื่อ" value="${name}" oninput="updateReceiverList()" style="flex: 2;">
+        <input type="number" class="p-hours" placeholder="ชม." value="${hours}" step="0.5" style="flex: 1;">
+        <label class="checkbox-group" style="font-size: 14px; white-space: nowrap;">
             <input type="checkbox" class="p-shuttle"> จ่ายค่าลูก
         </label>
         <button class="btn-remove" onclick="removePlayer('${id}')">X</button>
@@ -56,13 +56,12 @@ function updateReceiverList() {
 function calculate() {
     const courtPrice = parseFloat(document.getElementById('courtPrice').value) || 0;
     const courtHours = parseFloat(document.getElementById('courtHours').value) || 0;
-    const shuttleTubePrice = parseFloat(document.getElementById('shuttleTubePrice').value) || 0;
-    const shuttlesPerTube = parseFloat(document.getElementById('shuttlesPerTube').value) || 12;
+    
+    const shuttlePrice = parseFloat(document.getElementById('shuttlePrice').value) || 0;
     const shuttleCountUsed = parseFloat(document.getElementById('shuttleCountUsed').value) || 0;
 
     const totalCourtCost = courtPrice * courtHours;
-    const shuttleUnitPrice = shuttleTubePrice / shuttlesPerTube;
-    const totalShuttleCost = shuttleUnitPrice * shuttleCountUsed;
+    const totalShuttleCost = shuttlePrice * shuttleCountUsed;
     const totalTripCost = totalCourtCost + totalShuttleCost;
 
     const rows = document.querySelectorAll('.player-row');
@@ -74,7 +73,8 @@ function calculate() {
         const name = row.querySelector('.p-name').value.trim() || `คนที่ ${index+1}`;
         const hours = parseFloat(row.querySelector('.p-hours').value) || 0;
         const isShuttlePayer = row.querySelector('.p-shuttle').checked;
-        if(isShuttlePayer) shuttlePayerCount++;
+        
+        if (isShuttlePayer) shuttlePayerCount++;
         totalHours += hours;
         players.push({ id: index.toString(), name, hours, isShuttlePayer });
     });
@@ -109,10 +109,10 @@ function calculate() {
         });
 
         let statusText = "";
-        if (balance > 0) {
+        if (balance > 0.01) {
             statusText = `<span style="color:green">ได้รับคืน ${balance.toFixed(2)}</span>`;
             if (p.id !== receiverId) refundList.push({ name: p.name, amount: balance });
-        } else if (balance < 0) {
+        } else if (balance < -0.01) {
             statusText = `<span style="color:red">โอนเพิ่ม ${Math.abs(balance).toFixed(2)}</span>`;
             if (p.id !== receiverId) payList.push({ name: p.name, amount: Math.abs(balance) });
         } else {
@@ -151,6 +151,17 @@ function calculate() {
     summary += `----------------------\n🏦 โอนที่: ${mainReceiverName}\nบัญชี: ${bankAcc}`;
 
     document.getElementById('summaryText').value = summary;
+
+    // แสดง QR Code บนหน้าเว็บ
+    const qrContainer = document.getElementById('qrContainer');
+    if (accType === 'promptpay' && bankAcc.length >= 10 && qrContainer) {
+        let cleanNumber = bankAcc.replace(/[^0-9]/g, '');
+        document.getElementById('qrImage').src = `https://promptpay.io/${cleanNumber}.png`;
+        qrContainer.classList.remove('hidden');
+    } else if (qrContainer) {
+        qrContainer.classList.add('hidden');
+    }
+
     document.getElementById('resultSection').classList.remove('hidden');
 
     buildFlexMessage(totalTripCost, playerDetails, mainReceiverName, accType, bankName, bankAcc);
@@ -180,10 +191,10 @@ function buildFlexMessage(totalCost, playerDetails, receiverName, accType, bankN
         let balanceText = "0.00";
         let balanceColor = "#aaaaaa";
         
-        if (p.balance > 0) {
+        if (p.balance > 0.01) {
             balanceText = `คืน ${p.balance.toFixed(2)}`;
             balanceColor = "#00B900"; 
-        } else if (p.balance < 0) {
+        } else if (p.balance < -0.01) {
             balanceText = `โอน ${Math.abs(p.balance).toFixed(2)}`;
             balanceColor = "#E07A5F"; 
         }

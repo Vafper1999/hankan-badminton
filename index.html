@@ -26,17 +26,13 @@
             <hr>
             <div class="input-row">
                 <div class="input-group">
-                    <label>ราคาลูกแบด (บาท/กระป๋อง)</label>
-                    <input type="number" id="shuttleTubePrice" placeholder="เช่น 560">
+                    <label>ราคาลูกแบด (บาท/ลูก)</label>
+                    <input type="number" id="shuttlePrice" placeholder="เช่น 25">
                 </div>
                 <div class="input-group">
-                    <label>จำนวนลูก (ต่อกระป๋อง)</label>
-                    <input type="number" id="shuttlesPerTube" value="12">
+                    <label>จำนวนลูกที่ใช้จริง (ลูก)</label>
+                    <input type="number" id="shuttleCountUsed" placeholder="เช่น 3">
                 </div>
-            </div>
-            <div class="input-group">
-                <label>จำนวนลูกที่ใช้จริง (ลูก)</label>
-                <input type="number" id="shuttleCountUsed" placeholder="เช่น 3">
             </div>
         </div>
 
@@ -75,8 +71,6 @@
 
         <button class="btn-calc" onclick="calculate()">🧮 คำนวณยอด</button>
 
-        <button id="btnSendLine" class="btn-line" onclick="sendToLine()">🚀 ส่งสรุปยอดเข้ากลุ่ม LINE</button>
-
         <div id="resultSection" class="hidden">
             <h3>📊 สรุปยอดแบบละเอียด</h3>
             <div class="table-responsive">
@@ -93,10 +87,16 @@
                     <tbody></tbody>
                 </table>
             </div>
+            
+            <div class="qr-section hidden" id="qrContainer" style="text-align: center; margin-bottom: 15px; padding: 15px; background: #FAFAFA; border-radius: 12px; border: 2px dashed #8AB6D6;">
+                <img id="qrImage" src="" alt="PromptPay QR" style="max-width: 200px; border-radius: 8px;">
+                <p style="color: #8AB6D6; font-weight: bold; margin-top: 5px;">สแกน QR ระบุยอดเอง</p>
+            </div>
 
             <h3>📝 ข้อความสรุปสำหรับส่งในแชท</h3>
             <textarea id="summaryText" rows="10" readonly></textarea>
             <button class="btn-copy" onclick="copyText()">📋 ก๊อปปี้ข้อความ (กรณีไม่ได้เปิดใน LINE)</button>
+            <button id="btnSendLine" class="btn-line" onclick="sendToLine()">🚀 ส่งสรุปยอดเข้ากลุ่ม LINE</button>
         </div>
     </div>
     <script src="script.js"></script>
