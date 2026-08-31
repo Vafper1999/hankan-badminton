@@ -100,7 +100,7 @@
         </div>
     </div>
     <script src="script.js"></script>
-    <!-- Modal PDPA -->
+<!-- Modal PDPA -->
 <div id="pdpaModal" class="pdpa-overlay hidden">
     <div class="pdpa-box">
         <h3 style="margin-top: 0;">🛡️ ข้อกำหนดและนโยบาย PDPA</h3>
@@ -130,7 +130,8 @@
             หากมีข้อสงสัยเกี่ยวกับการใช้งาน หรือต้องการใช้สิทธิจัดการข้อมูลส่วนบุคคล ติดต่อผู้พัฒนาได้ที่อีเมล: kritthanat1999@gmail.com</p>
         </div>
         <label class="pdpa-checkbox">
-            <input type="checkbox" id="acceptCheckbox" onchange="toggleAcceptBtn()">
+            <!-- จุดที่แก้คือเปลี่ยนจาก onchange เป็น onclick ตรงนี้ครับ -->
+            <input type="checkbox" id="acceptCheckbox" onclick="toggleAcceptBtn()">
             ฉันได้อ่านและยอมรับข้อกำหนดทั้งหมด
         </label>
         <button id="btnAcceptPdpa" class="btn-main disabled" onclick="acceptPDPA()" disabled>ยืนยันเข้าใช้งาน</button>
