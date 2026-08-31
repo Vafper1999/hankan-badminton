@@ -263,3 +263,24 @@ hr {
 .pdpa-content { height: 150px; overflow-y: auto; background: #F9F9F9; padding: 15px; border-radius: 8px; font-size: 13px; margin-bottom: 15px; border: 1px solid #EEE; }
 .pdpa-checkbox { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; cursor: pointer; margin-bottom: 15px; }
 .btn-main.disabled { background: #CCC; cursor: not-allowed; box-shadow: none; }
+
+/* ตกแต่งปุ่มยืนยัน PDPA */
+.btn-main {
+    background: var(--primary);
+    color: white;
+    border: none;
+    padding: 14px;
+    width: 100%;
+    font-size: 16px;
+    border-radius: 12px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: 0.3s;
+    font-weight: 500;
+    box-shadow: 0 4px 15px rgba(139, 83, 50, 0.3);
+}
+
+.btn-main:hover:not(.disabled) {
+    background: #eb8d4a;
+    transform: translateY(-2px);
+}
