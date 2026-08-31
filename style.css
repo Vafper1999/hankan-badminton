@@ -179,7 +179,7 @@ button {
     background: #FF9A9E; 
 }
 
-.hidden { display: none; }
+.hidden { display: none !important; }
 
 /* ตาราง */
 .table-responsive { overflow-x: auto; }
