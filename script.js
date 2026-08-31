@@ -7,8 +7,8 @@ const LIFF_ID = "2010086723-ESV925IL";
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzldeglWlPQAiG9KvaIrh-KX7QpUI6ux0bjddW2gKVvu5leHP15x7rUcLURXlBh2TW2/exec"; 
 
 window.onload = async () => {
-    addPlayer('ว๊าฟ', 2);
-    addPlayer('แม็ก', 2);
+    addPlayer('A', 2);
+    addPlayer('B', 2);
 
     try {
         await liff.init({ liffId: LIFF_ID });
