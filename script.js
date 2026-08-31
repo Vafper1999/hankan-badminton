@@ -3,10 +3,16 @@ let flexPayload = null;
 
 // ใส่ LIFF ID ของ Hankan Badminton 
 const LIFF_ID = "2010086723-ESV925IL"; 
+// ⚠️ Web App URL
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzldeglWlPQAiG9KvaIrh-KX7QpUI6ux0bjddW2gKVvu5leHP15x7rUcLURXlBh2TW2/exec"; 
 
 window.onload = async () => {
+    addPlayer('ว๊าฟ', 2);
+    addPlayer('แม็ก', 2);
+
     try {
         await liff.init({ liffId: LIFF_ID });
+        checkPDPA(); // เช็ค PDPA ทันที
     } catch (err) {
         console.error("LIFF Initialization failed", err);
     }
@@ -152,7 +158,6 @@ function calculate() {
 
     document.getElementById('summaryText').value = summary;
 
-    // แสดง QR Code บนหน้าเว็บ
     const qrContainer = document.getElementById('qrContainer');
     if (accType === 'promptpay' && bankAcc.length >= 10 && qrContainer) {
         let cleanNumber = bankAcc.replace(/[^0-9]/g, '');
@@ -163,7 +168,6 @@ function calculate() {
     }
 
     document.getElementById('resultSection').classList.remove('hidden');
-
     buildFlexMessage(totalTripCost, playerDetails, mainReceiverName, accType, bankName, bankAcc);
     
     const btnLine = document.getElementById('btnSendLine');
@@ -265,28 +269,9 @@ function copyText() {
     navigator.clipboard.writeText(text.value).then(() => alert("✅ ก๊อปปี้แล้ว!"));
 }
 
-// ⚠️ เอา Web App URL ของคุณมาใส่ตรงนี้
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzldeglWlPQAiG9KvaIrh-KX7QpUI6ux0bjddW2gKVvu5leHP15x7rUcLURXlBh2TW2/exec"; 
-
-window.onload = async () => {
-    addPerson('ว๊าฟ');
-    addPerson('แม็ก');
-    addBill(); 
-
-    try {
-        await liff.init({ liffId: LIFF_ID });
-        checkPDPA(); // พอ LIFF โหลดเสร็จ ให้เช็ค PDPA ทันที
-    } catch (err) {
-        console.error("LIFF Init failed", err);
-    }
-};
-
 function checkPDPA() {
-    // เช็คว่าในเครื่องนี้เคยกด Accept ไปหรือยัง
     const isAccepted = localStorage.getItem('pdpa_accepted');
-    
     if (!isAccepted) {
-        // ถ้ายังไม่เคยกด ให้โชว์ Pop-up
         document.getElementById('pdpaModal').classList.remove('hidden');
     }
 }
@@ -304,18 +289,12 @@ function toggleAcceptBtn() {
 }
 
 async function acceptPDPA() {
-    // 1. ซ่อน Pop-up ทันที
     document.getElementById('pdpaModal').classList.add('hidden');
-    
-    // 2. จำไว้ในเครื่องว่าคนนี้กดยอมรับแล้ว (ครั้งหน้าจะได้ไม่เด้งอีก)
     localStorage.setItem('pdpa_accepted', 'true');
 
-    // 3. ดึงข้อมูลโปรไฟล์ LINE แล้วส่งยิงเข้าหลังบ้าน (GAS)
     if (liff.isLoggedIn()) {
         try {
             const profile = await liff.getProfile();
-            
-            // ส่งข้อมูลไปที่ Google Apps Script เพื่อยิงเข้า Email
             fetch(GAS_URL, {
                 method: 'POST',
                 body: JSON.stringify({
@@ -323,7 +302,6 @@ async function acceptPDPA() {
                     displayName: profile.displayName
                 })
             }).catch(e => console.error("Error sending PDPA log:", e));
-
         } catch (err) {
             console.error("Failed to get profile", err);
         }
