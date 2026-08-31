@@ -269,13 +269,6 @@ function copyText() {
     navigator.clipboard.writeText(text.value).then(() => alert("✅ ก๊อปปี้แล้ว!"));
 }
 
-function checkPDPA() {
-    const isAccepted = localStorage.getItem('pdpa_accepted');
-    if (!isAccepted) {
-        document.getElementById('pdpaModal').classList.remove('hidden');
-    }
-}
-
 function toggleAcceptBtn() {
     const cb = document.getElementById('acceptCheckbox');
     const btn = document.getElementById('btnAcceptPdpa');
@@ -288,10 +281,28 @@ function toggleAcceptBtn() {
     }
 }
 
+function checkPDPA() {
+    const isAccepted = localStorage.getItem('pdpa_accepted');
+    const modal = document.getElementById('pdpaModal');
+    
+    if (!isAccepted) {
+        // บังคับแสดงหน้าต่าง
+        modal.style.display = 'flex'; 
+        modal.classList.remove('hidden');
+    } else {
+        // ถ้าเคยยอมรับแล้ว บังคับซ่อน
+        modal.style.display = 'none'; 
+    }
+}
+
 async function acceptPDPA() {
-    document.getElementById('pdpaModal').classList.add('hidden');
+    // 1. บังคับซ่อน Pop-up ทันทีแบบ 100%
+    document.getElementById('pdpaModal').style.display = 'none';
+    
+    // 2. จำไว้ในเครื่องว่าคนนี้กดยอมรับแล้ว
     localStorage.setItem('pdpa_accepted', 'true');
 
+    // 3. ดึงข้อมูลโปรไฟล์ LINE แล้วส่งยิงเข้าหลังบ้าน (GAS)
     if (liff.isLoggedIn()) {
         try {
             const profile = await liff.getProfile();
