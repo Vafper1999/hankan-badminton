@@ -2,140 +2,321 @@
 <html lang="th">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🤑 หารกัน - คอร์ทแบด</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#F6F7F9" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0B1220" media="(prefers-color-scheme: dark)">
+    <title>หารกัน — หารค่าแบด &amp; ค่าอาหาร</title>
     <link rel="icon" href="candy.png?v=1" type="image/png">
-    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,0..1,0&icon_names=account_balance,add,add_circle,arrow_back,arrow_forward,check,check_circle,chevron_right,close,content_copy,credit_card,delete,edit,expand_more,group,person,qr_code_2,receipt_long,remove,settings,sports_tennis,warning&display=block" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>🏸 หารค่าแบด</h1>
-        
-        <div class="card">
-            <h3>🏸 ข้อมูลสนามและลูกแบด</h3>
-            <div class="input-group">
-                <label>ค่าคอร์ท (บาท/ชม.)</label>
-                <input type="number" id="courtPrice" value="180">
-            </div>
-            <div class="input-group">
-                <label>เวลาที่จองคอร์ท (ชม.)</label>
-                <input type="number" id="courtHours" placeholder="เช่น 2" step="0.5">
-            </div>
-            <hr>
-            <div class="input-row">
-                <div class="input-group">
-                    <label>ราคาลูกแบด (บาท/ลูก)</label>
-                    <input type="number" id="shuttlePrice" placeholder="เช่น 25">
-                </div>
-                <div class="input-group">
-                    <label>จำนวนลูกที่ใช้จริง (ลูก)</label>
-                    <input type="number" id="shuttleCountUsed" placeholder="เช่น 3">
+<div class="app">
+
+    <!-- ============ HOME ============ -->
+    <section class="screen" data-screen="home">
+        <header class="home-bar">
+            <div class="brand">
+                <span class="brand-icon"><span class="ms">sports_tennis</span></span>
+                <div>
+                    <div class="brand-name">หารกัน</div>
+                    <div class="brand-sub">หารค่าแบดฉบับก๊วน</div>
                 </div>
             </div>
-        </div>
+            <button type="button" class="btn-icon" data-action="open-settings" aria-label="ตั้งค่า"><span class="ms">settings</span></button>
+        </header>
 
-        <div class="card">
-            <h3>👥 รายชื่อคนเล่น</h3>
-            <div id="playersList"></div>
-            <button class="btn-add" onclick="addPlayer()">+ เพิ่มคนเล่น</button>
-        </div>
-
-        <div class="card">
-            <h3>💳 ข้อมูลการโอนเงิน</h3>
-            <div class="input-group">
-                <label>ชื่อคนรับเงินหลัก (คนจ่ายค่าคอร์ท)</label>
-                <select id="receiverSelect">
-                    <option value="external">-- คนนอก (ไม่ได้เล่นด้วย) --</option>
-                </select>
+        <main class="content">
+            <div class="card hero">
+                <h1 class="hero-title">เล่นจบ หารจบ ใน 1 นาที</h1>
+                <p class="muted">คิดค่าคอร์ท ลูกแบด และค่าอาหาร แยกตามคนที่ร่วมวง พร้อมส่งบิลเข้า LINE ทันที</p>
+                <button type="button" class="btn btn-primary btn-block" data-action="new-bill">
+                    <span class="ms">add_circle</span> เริ่มบิลใหม่
+                </button>
             </div>
-            <div class="input-row">
-                <div class="input-group">
-                    <label>ประเภทบัญชีรับเงิน</label>
-                    <select id="accType">
-                        <option value="promptpay">พร้อมเพย์ (สร้าง QR ได้)</option>
-                        <option value="bank">บัญชีธนาคาร</option>
-                    </select>
+
+            <div id="draftBlock" class="hidden">
+                <div class="section-head">
+                    <h2>ทำต่อจากเดิม</h2>
+                    <span class="pill pill-orange">ค้างอยู่</span>
                 </div>
-                <div class="input-group">
-                    <label>ธนาคาร (ถ้ามี)</label>
-                    <input type="text" id="bankName" placeholder="เช่น กสิกรไทย">
+                <button type="button" class="card draft-card" data-action="resume">
+                    <div class="draft-info">
+                        <span class="muted small" id="draftMeta"></span>
+                        <strong class="money orange" id="draftTotal"></strong>
+                    </div>
+                    <div class="avatar-stack" id="draftAvatars"></div>
+                    <span class="round-go"><span class="ms">chevron_right</span></span>
+                </button>
+            </div>
+
+            <div>
+                <div class="section-head">
+                    <h2>ก๊วนประจำ</h2>
+                    <span class="muted small" id="rosterCount"></span>
+                </div>
+                <div class="card roster" id="rosterList"></div>
+            </div>
+
+            <div class="empty-home" id="homeEmpty">
+                <div class="empty-emoji">🏸</div>
+                <p class="muted">ยังไม่มีก๊วนประจำ · เริ่มบิลแรก แล้วรายชื่อจะถูกจำไว้ให้อัตโนมัติ</p>
+            </div>
+        </main>
+    </section>
+
+    <!-- ============ STEP HEADER (shared) ============ -->
+    <header class="step-bar hidden" id="stepBar">
+        <button type="button" class="btn-icon" data-action="back" aria-label="ย้อนกลับ"><span class="ms">arrow_back</span></button>
+        <div class="step-head">
+            <div class="progress" role="progressbar" aria-valuemin="1" aria-valuemax="4" id="progress">
+                <button type="button" data-goto="1" aria-label="ไปขั้นที่ 1"></button>
+                <button type="button" data-goto="2" aria-label="ไปขั้นที่ 2"></button>
+                <button type="button" data-goto="3" aria-label="ไปขั้นที่ 3"></button>
+                <button type="button" data-goto="4" aria-label="ไปขั้นที่ 4"></button>
+            </div>
+            <div class="step-title-row">
+                <h1 id="stepTitle"></h1>
+                <span class="muted small tnum" id="stepCount"></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============ STEP 1: PLAYERS ============ -->
+    <section class="screen" data-screen="1">
+        <main class="content">
+            <div class="chip-row" id="quickChips"></div>
+
+            <form class="add-row" id="addPlayerForm" autocomplete="off">
+                <label for="newPlayerName" class="sr-only">พิมพ์ชื่อแล้วกดเพิ่ม</label>
+                <input id="newPlayerName" class="input" type="text" maxlength="40" placeholder="พิมพ์ชื่อแล้วกด +" enterkeyhint="done">
+                <button type="submit" class="btn-square" aria-label="เพิ่มชื่อ"><span class="ms">add</span></button>
+            </form>
+
+            <div class="section-head">
+                <h2>รายชื่อในบิลนี้</h2>
+                <button type="button" class="btn-text" data-action="set-all-hours" id="setAllHoursBtn"></button>
+            </div>
+            <div id="playerCards" class="stack"></div>
+            <div id="playersEmpty" class="empty hidden">
+                <div class="empty-emoji">👥</div>
+                <p class="muted">ยังไม่มีใครในบิล · แตะชื่อจากก๊วนประจำ หรือพิมพ์ชื่อด้านบน</p>
+            </div>
+        </main>
+    </section>
+
+    <!-- ============ STEP 2: COURT & SHUTTLE ============ -->
+    <section class="screen" data-screen="2">
+        <main class="content">
+            <div class="card">
+                <div class="card-head">
+                    <h2>🏟️ คอร์ท</h2>
+                    <span class="pill pill-green tnum" id="courtBadge"></span>
+                </div>
+                <label class="field">
+                    <span class="field-label">ค่าเช่าคอร์ทต่อชั่วโมง (ต่อคอร์ท)</span>
+                    <span class="input-wrap">
+                        <input class="input input-num" type="number" inputmode="decimal" min="0" data-bind="court.price">
+                        <span class="suffix">บ./ชม.</span>
+                    </span>
+                </label>
+                <div class="field">
+                    <span class="field-label">จำนวนชั่วโมงที่จอง</span>
+                    <div class="seg seg-5" id="courtHoursSeg">
+                        <button type="button" data-hours="1">1</button>
+                        <button type="button" data-hours="1.5">1.5</button>
+                        <button type="button" data-hours="2">2</button>
+                        <button type="button" data-hours="3">3</button>
+                        <button type="button" data-hours="other">อื่นๆ</button>
+                    </div>
+                    <span class="input-wrap hidden mt-8" id="courtHoursOtherWrap">
+                        <input class="input input-num" type="number" inputmode="decimal" min="0" step="0.5" data-bind="court.hours" id="courtHoursInput">
+                        <span class="suffix">ชม.</span>
+                    </span>
+                </div>
+                <div class="row-between">
+                    <span>จำนวนคอร์ท</span>
+                    <div class="stepper" data-stepper="court.count" data-min="1" data-step="1" data-max="20"></div>
+                </div>
+                <div class="formula tnum" id="courtFormula"></div>
+                <div class="divider"></div>
+                <div class="field-label strong">ใครจ่ายค่าคอร์ท?</div>
+                <div class="payer-row" data-payer="court.payer"></div>
+            </div>
+
+            <div class="card">
+                <div class="card-head">
+                    <h2>🏸 ลูกแบด</h2>
+                    <span class="pill pill-green tnum" id="shuttleBadge"></span>
+                </div>
+                <div class="grid-2">
+                    <label class="field">
+                        <span class="field-label">ราคาลูก 1 หลอด</span>
+                        <span class="input-wrap">
+                            <input class="input input-num" type="number" inputmode="decimal" min="0" placeholder="0" data-bind="shuttle.tubePrice">
+                            <span class="suffix">บ.</span>
+                        </span>
+                    </label>
+                    <label class="field">
+                        <span class="field-label">จำนวนลูกต่อหลอด</span>
+                        <span class="input-wrap">
+                            <input class="input input-num" type="number" inputmode="numeric" min="1" data-bind="shuttle.perTube">
+                            <span class="suffix">ลูก</span>
+                        </span>
+                    </label>
+                </div>
+                <div class="row-between">
+                    <span>ใช้ไปทั้งหมด</span>
+                    <div class="stepper" data-stepper="shuttle.used" data-min="0" data-step="1" data-max="200" data-unit="ลูก"></div>
+                </div>
+                <div class="seg seg-2" id="splitSeg">
+                    <button type="button" data-split="hours">ตามชั่วโมง</button>
+                    <button type="button" data-split="equal">หารเท่า</button>
+                </div>
+                <div class="formula tnum" id="shuttleFormula"></div>
+                <div class="divider"></div>
+                <div class="field-label strong">ใครซื้อลูก?</div>
+                <div class="payer-row" data-payer="shuttle.payer"></div>
+            </div>
+        </main>
+    </section>
+
+    <!-- ============ STEP 3: FOOD ============ -->
+    <section class="screen" data-screen="3">
+        <main class="content">
+            <div class="section-head">
+                <h2>รายการอาหาร</h2>
+                <button type="button" class="btn-text" data-action="skip-food" id="skipFoodBtn">ไม่มีค่าอาหาร ข้ามเลย</button>
+            </div>
+            <div id="foodCards" class="stack"></div>
+            <button type="button" class="btn-dashed" data-action="add-food"><span class="ms">add</span> เพิ่มเมนู</button>
+
+            <div id="foodExtras" class="stack">
+                <div class="card">
+                    <h2 class="card-title">ค่าบริการ</h2>
+                    <div class="row-between list-row">
+                        <label for="svcToggle">Service charge</label>
+                        <div class="row-gap">
+                            <span class="input-wrap input-mini hidden" id="svcPctWrap">
+                                <input class="input input-num" type="number" inputmode="decimal" min="0" max="100" data-bind="food.servicePct" aria-label="เปอร์เซ็นต์ service charge">
+                                <span class="suffix">%</span>
+                            </span>
+                            <input type="checkbox" class="switch" id="svcToggle">
+                        </div>
+                    </div>
+                    <div class="row-between list-row">
+                        <label for="vatToggle">VAT 7%</label>
+                        <input type="checkbox" class="switch" id="vatToggle" data-bind="food.vat">
+                    </div>
+                    <div class="row-between list-row">
+                        <span>ส่วนลด (บาท)</span>
+                        <span class="input-wrap input-small">
+                            <input class="input input-num" type="number" inputmode="decimal" min="0" placeholder="0" data-bind="food.discount" aria-label="ส่วนลด">
+                            <span class="suffix">บ.</span>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card receipt" id="foodReceipt"></div>
+
+                <div class="card">
+                    <div class="field-label strong">ใครจ่ายค่าอาหาร?</div>
+                    <div class="payer-row" data-payer="food.payer"></div>
                 </div>
             </div>
-            <div class="input-group">
-                <label>เลขบัญชี / เบอร์พร้อมเพย์</label>
-                <input type="text" id="bankAccount" placeholder="0812345678">
+        </main>
+    </section>
+
+    <!-- ============ STEP 4: SUMMARY ============ -->
+    <section class="screen" data-screen="4">
+        <main class="content">
+            <div id="messages" class="alert-list hidden" role="alert"></div>
+
+            <div id="summaryBody" class="stack">
+                <div class="card">
+                    <span class="muted small">ยอดรวมทั้งหมด</span>
+                    <div class="grand money tnum" id="grandTotal"></div>
+                    <div class="stackbar" id="stackBar"></div>
+                    <div class="legend" id="legend"></div>
+                </div>
+
+                <div class="section-head">
+                    <h2>💸 ใครโอนให้ใคร</h2>
+                    <span class="muted small" id="transferCount"></span>
+                </div>
+                <div id="transferCards" class="stack"></div>
+
+                <div class="section-head"><h2>รายคน</h2></div>
+                <div class="card card-flush" id="personList"></div>
+                <p class="muted small" id="roundNote"></p>
+
+                <textarea id="summaryText" class="sr-only" readonly tabindex="-1" aria-hidden="true"></textarea>
             </div>
-        </div>
+        </main>
+    </section>
 
-        <button class="btn-calc" onclick="calculate()">🧮 คำนวณยอด</button>
-
-        <div id="resultSection" class="hidden">
-            <h3>📊 สรุปยอดแบบละเอียด</h3>
-            <div class="table-responsive">
-                <table id="resultTable">
-                    <thead>
-                        <tr>
-                            <th>ชื่อ</th>
-                            <th>เวลา</th>
-                            <th>ค่าเล่น</th>
-                            <th>สำรองจ่าย</th>
-                            <th>ยอดโอน / รับคืน</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+    <!-- ============ SUCCESS ============ -->
+    <section class="screen" data-screen="done">
+        <main class="content success">
+            <div class="success-badge">
+                <span class="confetti c1"></span><span class="confetti c2"></span><span class="confetti c3"></span>
+                <span class="confetti c4"></span><span class="confetti c5"></span><span class="confetti c6"></span>
+                <span class="success-check"><span class="ms">check</span></span>
             </div>
-            
-            <div class="qr-section hidden" id="qrContainer" style="text-align: center; margin-bottom: 15px; padding: 15px; background: #FAFAFA; border-radius: 12px; border: 2px dashed #8AB6D6;">
-                <img id="qrImage" src="" alt="PromptPay QR" style="max-width: 200px; border-radius: 8px;">
-                <p style="color: #8AB6D6; font-weight: bold; margin-top: 5px;">สแกน QR ระบุยอดเอง</p>
+            <h1>ส่งบิลแล้ว! 💸</h1>
+            <p class="muted">เพื่อนๆ สแกน QR ในแชทได้เลย</p>
+            <span class="pill pill-plain tnum" id="doneMeta"></span>
+            <div class="success-actions">
+                <button type="button" class="btn btn-primary btn-block" data-action="close-liff" id="closeLiffBtn">กลับไปที่ LINE</button>
+                <button type="button" class="btn btn-soft btn-block" data-action="new-bill">เริ่มบิลใหม่</button>
             </div>
+        </main>
+    </section>
 
-            <h3>📝 ข้อความสรุปสำหรับส่งในแชท</h3>
-            <textarea id="summaryText" rows="10" readonly></textarea>
-            <button class="btn-copy" onclick="copyText()">📋 ก๊อปปี้ข้อความ (กรณีไม่ได้เปิดใน LINE)</button>
-            <button id="btnSendLine" class="btn-line" onclick="sendToLine()">🚀 ส่งสรุปยอดเข้ากลุ่ม LINE</button>
+    <!-- ============ BOTTOM BAR ============ -->
+    <footer class="bottom-bar hidden" id="bottomBar">
+        <div class="bottom-error hidden" id="bottomError"></div>
+        <div class="bottom-inner">
+            <div class="bottom-info">
+                <span class="muted small" id="bottomLabel"></span>
+                <strong class="tnum" id="bottomValue"></strong>
+            </div>
+            <button type="button" class="btn btn-primary" data-action="next" id="nextBtn"></button>
+            <button type="button" class="btn btn-line hidden" data-action="send-line" id="sendLineBtn">
+                <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3C6.48 3 2 6.58 2 11c0 2.86 1.88 5.37 4.72 6.78l-.76 2.82c-.1.37.3.67.63.47l3.38-2.03c.66.1 1.34.16 2.03.16 5.52 0 10-3.58 10-8S17.52 3 12 3z"/></svg>
+                <span id="sendLineLabel">ส่งเข้ากลุ่ม LINE</span>
+            </button>
+            <button type="button" class="btn-square btn-square-soft hidden" data-action="copy" id="copyBtn" aria-label="ก๊อปปี้ข้อความสรุป"><span class="ms">content_copy</span></button>
         </div>
-    </div>
-<!-- Modal PDPA -->
-<div id="pdpaModal" class="pdpa-overlay hidden">
-    <div class="pdpa-box">
-        <h3 style="margin-top: 0;">🛡️ ข้อกำหนดและนโยบาย PDPA</h3>
-        <div class="pdpa-content" style="height: 250px; text-align: left;">
-            <p><strong>1. บทนำและการยอมรับเงื่อนไข</strong><br>
-            การที่คุณเชิญบอท "หารกัน" เข้าสู่กลุ่ม LINE หรือกดปุ่ม "ยอมรับ" ถือว่าคุณได้อ่าน เข้าใจ และตกลงยินยอมตามข้อกำหนดและนโยบายความเป็นส่วนตัวฉบับนี้ หากคุณไม่ยินยอม โปรดงดเว้นการใช้งานและนำบอทออกจากกลุ่ม</p>
+    </footer>
+</div>
 
-            <p><strong>2. ข้อมูลส่วนบุคคลที่เราเก็บรวบรวม</strong><br>
-            ระบบจำเป็นต้องเข้าถึงข้อมูล ดังนี้: ชื่อที่แสดง (Display Name), รูปโปรไฟล์, รหัสประจำตัวผู้ใช้ (LINE User ID) และข้อมูลการใช้งานที่คุณกรอกลงในระบบ (เช่น รายการค่าใช้จ่าย, ยอดเงิน, เลขที่บัญชีธนาคาร)</p>
-
-            <p><strong>3. วัตถุประสงค์ในการประมวลผลข้อมูล</strong><br>
-            เรานำข้อมูลไปใช้เพื่อ: ระบุตัวตนในการคำนวณบิล, สร้างสรุปรายการแสดงผลในกลุ่ม, สร้าง QR Code สำหรับรับเงิน และเพื่อวิเคราะห์พัฒนาประสิทธิภาพของระบบเท่านั้น</p>
-
-            <p><strong>4. การเปิดเผยข้อมูลแก่บุคคลที่สาม</strong><br>
-            ข้อมูลของคุณจะไม่ถูกนำไปขายเพื่อการโฆษณาเด็ดขาด อย่างไรก็ตาม ข้อมูลสรุปบิล (ชื่อผู้จ่าย, ยอดเงิน, บัญชีรับเงิน) จะถูกแสดงผลในกลุ่ม LINE ที่คุณใช้งานร่วมกับบุคคลอื่น ซึ่งถือเป็นการเปิดเผยข้อมูลที่คุณรับทราบและยินยอมแล้ว</p>
-
-            <p><strong>5. นโยบายการให้บริการและค่าบริการในอนาคต</strong><br>
-            ปัจจุบัน "หารกัน" เปิดให้บริการฟรี อย่างไรก็ตาม ผู้พัฒนาขอสงวนสิทธิ์ในการเพิ่มฟีเจอร์พิเศษ (Premium Features) ซึ่งอาจมีการเรียกเก็บค่าบริการในอนาคต โดยจะแจ้งให้ทราบล่วงหน้าผ่านช่องทางของระบบ</p>
-
-            <p><strong>6. ข้อจำกัดความรับผิด</strong><br>
-            ระบบเป็นเพียงเครื่องมือช่วยคำนวณ เราไม่มีส่วนเกี่ยวข้องกับการทำธุรกรรมทางการเงิน ผู้ใช้มีหน้าที่ตรวจสอบความถูกต้องของข้อมูลก่อนโอนเงินทุกครั้ง ผู้พัฒนาจะไม่รับผิดชอบต่อความเสียหายหรือการโอนเงินผิดพลาดใดๆ</p>
-
-            <p><strong>7. สิทธิของเจ้าของข้อมูลส่วนบุคคล</strong><br>
-            คุณมีสิทธิขอเข้าถึง แก้ไข หรือขอลบข้อมูลส่วนบุคคลออกจากระบบ รวมถึงเพิกถอนความยินยอมได้ตลอดเวลา โดยการลบเพื่อน (Block) หรือนำบอทออกจากกลุ่ม</p>
-
-            <p><strong>8. ช่องทางการติดต่อ (Contact Us)</strong><br>
-            หากมีข้อสงสัยเกี่ยวกับการใช้งาน หรือต้องการใช้สิทธิจัดการข้อมูลส่วนบุคคล ติดต่อผู้พัฒนาได้ที่อีเมล: kritthanat1999@gmail.com</p>
+<!-- ============ BOTTOM SHEET (shared) ============ -->
+<div class="sheet-backdrop hidden" id="sheetBackdrop">
+    <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="sheet-head">
+            <div class="sheet-title-wrap">
+                <span id="sheetAvatar"></span>
+                <div>
+                    <h3 id="sheetTitle"></h3>
+                    <p class="muted small" id="sheetSub"></p>
+                </div>
+            </div>
+            <button type="button" class="btn-icon btn-icon-flat" data-action="close-sheet" aria-label="ปิด"><span class="ms">close</span></button>
         </div>
-        <label class="pdpa-checkbox">
-            <!-- จุดที่แก้คือเปลี่ยนจาก onchange เป็น onclick ตรงนี้ครับ -->
-            <input type="checkbox" id="acceptCheckbox" onclick="toggleAcceptBtn()">
-            ฉันได้อ่านและยอมรับข้อกำหนดทั้งหมด
-        </label>
-        <button id="btnAcceptPdpa" class="btn-main disabled" onclick="acceptPDPA()" disabled>ยืนยันเข้าใช้งาน</button>
+        <div class="sheet-body" id="sheetBody"></div>
+        <div class="sheet-foot" id="sheetFoot"></div>
     </div>
 </div>
-    <script src="script.js"></script>
+
+<div id="toast" class="toast hidden" role="status"></div>
+
+<script src="script.js"></script>
 </body>
 </html>
