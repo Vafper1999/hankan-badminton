@@ -29,7 +29,7 @@ let sheetOnClose = null;
 function defaultState() {
     return {
         court:   { price: 180, hours: 2, count: 1, payer: '' },
-        shuttle: { tubePrice: '', perTube: 12, used: 0, split: 'hours', payer: '' },
+        shuttle: { tubePrice: '', perTube: 12, used: 0, split: 'hours', payers: [] },
         food:    { items: [], servicePct: '', vat: false, discount: '', payer: '' },
         players: [],
         external: { name: '', acc: emptyAcc() },
@@ -101,6 +101,11 @@ function loadState() {
             sent: !!s.sent,
             updatedAt: Number(s.updatedAt) || Date.now()
         };
+        // ย้ายจากเวอร์ชันเก่า: คนซื้อลูกคนเดียว → รายชื่อคนซื้อ (หลายคนได้)
+        const oldSh = s.shuttle || {};
+        if (!Array.isArray(oldSh.payers)) st.shuttle.payers = oldSh.payer ? [String(oldSh.payer)] : [];
+        st.shuttle.payers = st.shuttle.payers.map(String);
+        delete st.shuttle.payer;
         // ย้ายจากเวอร์ชันเก่า: สร้างก๊วนประจำจากรายชื่อเดิม
         if (!Array.isArray(s.roster)) st.players.forEach(p => syncRoster(p, st));
         return st;
@@ -314,6 +319,13 @@ function totalHours() { return state.players.reduce((s, p) => s + Math.max(num(p
  * Validation & calculation
  * ======================================================= */
 const validPayer = (id) => id === EXT || state.players.some(p => p.id === id);
+/** คนที่ช่วยกันซื้อลูก (หารค่าลูกกันเท่าๆ กัน) */
+function shuttleBuyers() { return (state.shuttle.payers || []).filter(validPayer); }
+function namesText(ids) {
+    const names = ids.map(nameOf);
+    if (names.length <= 3) return names.join(', ');
+    return `${names.slice(0, 2).join(', ')} และอีก ${names.length - 2} คน`;
+}
 
 /** ข้อผิดพลาดของแต่ละขั้น (ใช้กับปุ่ม "ต่อไป") */
 function stepErrors(step) {
@@ -333,7 +345,7 @@ function stepErrors(step) {
         }
         if (num(state.shuttle.used) > 0 && num(state.shuttle.perTube) <= 0) errs.push({ text: 'ใส่จำนวนลูกต่อหลอดให้มากกว่า 0', step: 2 });
         if (shuttleTotal() > 0) {
-            if (!validPayer(state.shuttle.payer)) errs.push({ text: 'เลือกคนซื้อลูกก่อนนะ', step: 2 });
+            if (shuttleBuyers().length === 0) errs.push({ text: 'เลือกคนซื้อลูกก่อนนะ (เลือกได้หลายคน)', step: 2 });
             if (playing.length === 0 && courtTotal() <= 0) errs.push({ text: 'ยังไม่มีใครมีชั่วโมงเล่นเลย', step: 1 });
         }
     }
@@ -387,7 +399,8 @@ function compute() {
     if (sT > 0) {
         const w = state.shuttle.split === 'equal' ? playing.map(p => [p.id, 1]) : playing.map(p => [p.id, p.hours]);
         Object.entries(allocate(sT, w)).forEach(([id, v]) => { lines[id].shuttle += v; });
-        lines[state.shuttle.payer].paid += sT;
+        // คนซื้อหลายคน → แต่ละคนออกเงินซื้อลูกเท่าๆ กัน
+        Object.entries(allocate(sT, shuttleBuyers().map(id => [id, 1]))).forEach(([id, v]) => { lines[id].paid += v; });
     }
     const ft = foodTotals();
     if (ft.total > 0) {
@@ -425,7 +438,7 @@ function compute() {
         errors, warnings, rows, transfers,
         totals: { court: cT, shuttle: sT, food: Math.max(ft.total, 0), all: cT + sT + Math.max(ft.total, 0) },
         food: ft,
-        payers: { court: state.court.payer, shuttle: state.shuttle.payer, food: state.food.payer }
+        payers: { court: state.court.payer, shuttle: shuttleBuyers(), food: state.food.payer }
     };
 }
 
@@ -572,7 +585,7 @@ function startNewBill() {
     state.players = [];
     state.food = { ...defaultState().food };
     state.shuttle.used = 0;
-    state.shuttle.payer = '';
+    state.shuttle.payers = [];
     state.court.payer = '';
     state.external = { name: '', acc: emptyAcc() };
     openPersonRows = new Set();
@@ -665,7 +678,8 @@ function removePlayer(id, { undo = true } = {}) {
     const snapshot = JSON.stringify(state);
     const [p] = state.players.splice(idx, 1);
     state.food.items.forEach(it => { it.eaters = it.eaters.filter(x => x !== id); });
-    ['court', 'shuttle', 'food'].forEach(k => { if (state[k].payer === id) state[k].payer = ''; });
+    ['court', 'food'].forEach(k => { if (state[k].payer === id) state[k].payer = ''; });
+    state.shuttle.payers = (state.shuttle.payers || []).filter(x => x !== id);
     touch();
     renderScreen();
     if (undo) {
@@ -737,6 +751,10 @@ function refreshStep2Live() {
         : '';
     const sT = shuttleTotal();
     $('shuttleBadge').textContent = baht(sT);
+    const buyers = shuttleBuyers();
+    $('shuttleBuyers').textContent = sT > 0 && buyers.length > 1
+        ? `${buyers.length} คนช่วยกันซื้อ · ออกคนละ ${baht(Math.ceil(sT / buyers.length))}`
+        : '';
     $('shuttleFormula').textContent = shuttleUnit() > 0
         ? `ลูกละ ${fmt(shuttleUnit())} · รวม ${baht(sT)}`
         : '';
@@ -768,22 +786,39 @@ function renderStepper(box) {
 /** แถว avatar สำหรับเลือกคนจ่าย (แทน dropdown) */
 function renderPayerRow(row) {
     const path = row.dataset.payer;
+    const multi = row.dataset.multi === '1';   // เลือกได้หลายคน (เช่น หารกันซื้อลูก)
     const cur = getPath(path);
-    if (cur && !validPayer(cur)) setPath(path, '');
+    if (multi) {
+        const clean = (Array.isArray(cur) ? cur : []).filter(validPayer);
+        if (!Array.isArray(cur) || clean.length !== cur.length) setPath(path, clean);
+    } else if (cur && !validPayer(cur)) setPath(path, '');
+    const isOn = (id) => multi ? getPath(path).includes(id) : getPath(path) === id;
+    const select = (id) => {
+        if (multi) {
+            const set = new Set(getPath(path));
+            if (set.has(id)) set.delete(id); else set.add(id);
+            setPath(path, [...set]);
+        } else {
+            setPath(path, id);
+        }
+        touch();
+        renderPayerRow(row);
+        refreshLive();
+    };
     const make = (id, name, isExt) => {
-        const on = getPath(path) === id;
+        const on = isOn(id);
         return el('button', {
             type: 'button', class: `payer ${on ? 'on' : ''}`, 'aria-pressed': String(on),
             'aria-label': `${name}${on ? ' (เลือกอยู่)' : ''}`,
             onclick: () => {
-                if (isExt && (on || isBlank(state.external.name))) {
-                    openExternalSheet(() => { setPath(path, EXT); touch(); renderPayerRow(row); refreshLive(); });
+                // คนนอก: ต้องมีชื่อก่อน / ถ้าเลือกอยู่แล้วในโหมดเลือกคนเดียว แตะเพื่อแก้ไข
+                if (isExt && (isBlank(state.external.name) || (on && !multi))) {
+                    openExternalSheet(() => {
+                        if (!isOn(EXT)) select(EXT); else { touch(); renderPayerRow(row); refreshLive(); }
+                    });
                     return;
                 }
-                setPath(path, id);
-                touch();
-                renderPayerRow(row);
-                refreshLive();
+                select(id);
             }
         }, [
             el('span', { class: 'avatar-wrap', style: 'position:relative' }, [
@@ -965,7 +1000,11 @@ function personRow(x) {
     const paid = [];
     const t = window.__lastResult && window.__lastResult.totals;
     if (state.court.payer === x.id && courtTotal()) paid.push(['สำรองจ่ายค่าคอร์ท', `−${baht(courtTotal())}`]);
-    if (state.shuttle.payer === x.id && shuttleTotal()) paid.push(['สำรองจ่ายค่าลูก', `−${baht(shuttleTotal())}`]);
+    const buyers = shuttleBuyers();
+    if (buyers.includes(x.id) && shuttleTotal()) {
+        const share = allocate(shuttleTotal(), buyers.map(id => [id, 1]))[x.id] || 0;
+        paid.push([buyers.length > 1 ? `ร่วมซื้อลูก (${buyers.length} คน)` : 'สำรองจ่ายค่าลูก', `−${baht(share)}`]);
+    }
     if (state.food.payer === x.id && t && t.food) paid.push(['สำรองจ่ายค่าอาหาร', `−${baht(t.food)}`]);
 
     const wrap = el('div', { class: `person-row ${openPersonRows.has(x.id) ? 'open' : ''}` });
@@ -995,7 +1034,7 @@ function buildSummaryText(r) {
     const line = '----------------------';
     let s = `🏸 สรุปค่าใช้จ่าย (${thaiDate(Date.now())})\n`;
     if (totals.court) s += `ค่าคอร์ท: ${baht(totals.court)} (จ่ายโดย ${nameOf(r.payers.court)})\n`;
-    if (totals.shuttle) s += `ค่าลูก: ${baht(totals.shuttle)} (ซื้อโดย ${nameOf(r.payers.shuttle)})\n`;
+    if (totals.shuttle) s += `ค่าลูก: ${baht(totals.shuttle)} (ซื้อโดย ${namesText(r.payers.shuttle)})\n`;
     if (totals.food) s += `ค่าอาหาร: ${baht(totals.food)} (จ่ายโดย ${nameOf(r.payers.food)})\n`;
     s += `รวม: ${baht(totals.all)}\n${line}\n👤 ค่าใช้จ่ายรายคน\n`;
     rows.filter(x => x.owed > 0).forEach(x => { s += `- ${x.name}: ${baht(x.owed)}\n`; });
@@ -1419,7 +1458,7 @@ function buildFlexMessage(r) {
         FSEP
     ];
     if (totals.court) body.push(FROW(`คอร์ท (${nameOf(r.payers.court)} จ่าย)`, fmt(totals.court)));
-    if (totals.shuttle) body.push(FROW(`ลูก (${nameOf(r.payers.shuttle)} ซื้อ)`, fmt(totals.shuttle)));
+    if (totals.shuttle) body.push(FROW(`ลูก (${namesText(r.payers.shuttle)} ซื้อ)`, fmt(totals.shuttle)));
     if (totals.food) body.push(FROW(`อาหาร (${nameOf(r.payers.food)} จ่าย)`, fmt(totals.food)));
 
     body.push(FSEP, FT('ยอดต่อคน', { size: 'xs', color: '#63738A', margin: 'md' }));
